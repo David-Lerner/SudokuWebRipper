@@ -1,3 +1,4 @@
+import com.google.gson.*;
 import java.sql.*;
 import java.util.Scanner;
 
@@ -6,8 +7,13 @@ public class SQLiteJDBC
     public static void main( String args[] ) {
         boolean exit = false;
         while (! exit) {
-            System.out.println("SQLite Test.");
-            System.out.println("Choose one of the following options:");
+            String myJSONString = "{"
+                    + "\"title\": \"SQLite & GSON Test\","
+                    + "\"choose\": \"Choose one of the following options:\""
+                    + "}";
+            JsonObject jobj = new Gson().fromJson(myJSONString, JsonObject.class);
+            System.out.println(jobj.get("title").getAsString());
+            System.out.println(jobj.get("choose").getAsString());
             System.out.println("0: Exit");
             System.out.println("1: Connect to/create db");
             System.out.println("2: Create table");

@@ -1,4 +1,3 @@
-
 import com.ehsunbehravesh.asyncwebreader.AsyncWebReader;
 import java.sql.*;
 import java.util.HashMap;
@@ -22,8 +21,8 @@ public class SudokuPuzzler {
     public static final String FAILURE = "failures";
     public static final String URL = "url";
     //range (inclusive) of puzzles to read
-    public static final int START = 2;
-    public static final int END = 10;
+    public static final int START = 1;
+    public static final int END = 1;
     
     public static void main(String[] args) throws Exception {        
         String[] urls;
