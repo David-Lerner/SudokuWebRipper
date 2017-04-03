@@ -9,9 +9,8 @@ import java.util.Observer;
  * @author David
  */
 public class SudokuPuzzler {
-    //website base url
-    public static final String PUZZLER_URL = "http://www.sudokupuzzler.com/sp.asp?number=";
-    public static final String REFERER_URL = "http://www.sudokupuzzler.com/sp.asp";
+    //database name
+    public static final String DB_NAME = "puzzler.db";
     //table naming constants
     public static final String SUDOKU = "sudoku";
     public static final String ID = "id";
@@ -20,9 +19,14 @@ public class SudokuPuzzler {
     public static final String GIVEN = "given"; 
     public static final String FAILURE = "failures";
     public static final String URL = "url";
+    
+    //website base url
+    public static final String PUZZLER_URL = "http://www.sudokupuzzler.com/sp.asp?number=";
+    public static final String REFERER_URL = "http://www.sudokupuzzler.com/sp.asp";
     //range (inclusive) of puzzles to read
-    public static final int START = 1;
-    public static final int END = 1;
+    public static final int START = 2725;
+    public static final int END = 2730;
+    
     
     public static void main(String[] args) throws Exception {        
         String[] urls;
@@ -33,7 +37,7 @@ public class SudokuPuzzler {
         Statement stmt = null;
         try {
             Class.forName("org.sqlite.JDBC");
-            c = DriverManager.getConnection("jdbc:sqlite:puzzler.db");
+            c = DriverManager.getConnection("jdbc:sqlite:"+DB_NAME);
       
             stmt = c.createStatement();
             ResultSet rs = stmt.executeQuery(String.format("SELECT COUNT(*) FROM %s;", FAILURE));
@@ -46,7 +50,7 @@ public class SudokuPuzzler {
             rs = stmt.executeQuery(String.format("SELECT * FROM %s;", FAILURE));
             int i = 0;
             while ( rs.next() ) {
-                urls[i] = rs.getString("url");
+                urls[i] = rs.getString(URL);
                 i++; 
             }
             rs.close();
