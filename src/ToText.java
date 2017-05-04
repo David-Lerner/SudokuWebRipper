@@ -16,7 +16,7 @@ public class ToText {
     public static final String DIFFICULTY = "difficulty";
     public static final String GIVEN = "given"; 
     //number of puzzles to send to text file
-    public static final int NUM = 500; 
+    public static final int NUM = 1000; 
     //name of text file
     public static final String FILE_NAME = "puzzler.txt";
     

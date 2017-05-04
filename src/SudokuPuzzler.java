@@ -1,3 +1,4 @@
+import com.david.completesudoku.SudokuSolver;
 import com.ehsunbehravesh.asyncwebreader.AsyncWebReader;
 import java.sql.*;
 import java.util.HashMap;
@@ -24,8 +25,8 @@ public class SudokuPuzzler {
     public static final String PUZZLER_URL = "http://www.sudokupuzzler.com/sp.asp?number=";
     public static final String REFERER_URL = "http://www.sudokupuzzler.com/sp.asp";
     //range (inclusive) of puzzles to read
-    public static final int START = 2725;
-    public static final int END = 2730;
+    public static final int START = 2731;
+    public static final int END = 2770;
     
     
     public static void main(String[] args) throws Exception {        
@@ -38,7 +39,33 @@ public class SudokuPuzzler {
         try {
             Class.forName("org.sqlite.JDBC");
             c = DriverManager.getConnection("jdbc:sqlite:"+DB_NAME);
-      
+            
+            //create tables
+            stmt = c.createStatement();
+            String sql = String.format("CREATE TABLE IF NOT EXISTS %s (" +
+                "%s INTEGER PRIMARY KEY NOT NULL," +
+                "%s CHAR(81) NOT NULL," + 
+                "%s CHAR(50)," + 
+                "%s INTEGER,", SUDOKU, ID, PUZZLE, DIFFICULTY, GIVEN);
+            StringBuilder sb = new StringBuilder(sql);
+            for (int i = 1; i < SudokuSolver.STRATEGY_NUMBER; i++) {
+                sb.append(SudokuSolver.getStrategyName(i).replace(' ', '_'));
+                sb.append(" INTEGER,");
+            }
+            for (int i = 1; i < SudokuSolver.STRATEGY_NUMBER; i++) {
+                sb.append(i == 1 ? " Cell_" : ", Cell_");
+                sb.append(SudokuSolver.getStrategyName(i).replace(' ', '_'));
+                sb.append(" INTEGER");
+            }
+            sb.append(");");
+            stmt.executeUpdate(sb.toString());
+  
+            stmt = c.createStatement();
+            sql = String.format("CREATE TABLE IF NOT EXISTS %s (" +
+                    "%s VARCHAR(255) NOT NULL" + 
+                    ");", FAILURE, URL); 
+            stmt.executeUpdate(sql);
+            
             stmt = c.createStatement();
             ResultSet rs = stmt.executeQuery(String.format("SELECT COUNT(*) FROM %s;", FAILURE));
             rs.next();
@@ -97,25 +124,11 @@ public class SudokuPuzzler {
                 Statement stmt = null;
                 try {
                 Class.forName("org.sqlite.JDBC");
-                c = DriverManager.getConnection("jdbc:sqlite:puzzler.db");
-
-                stmt = c.createStatement();
-                String sql = String.format("CREATE TABLE IF NOT EXISTS %s (" +
-                    "%s INTEGER PRIMARY KEY NOT NULL," +
-                    "%s CHAR(81) NOT NULL," + 
-                    "%s CHAR(50)," + 
-                    "%s INTEGER" +
-                    ");", SUDOKU, ID, PUZZLE, DIFFICULTY, GIVEN);
-                stmt.executeUpdate(sql);
+                c = DriverManager.getConnection("jdbc:sqlite:"+DB_NAME);
                 
                 stmt = c.createStatement();
-                sql = String.format("CREATE TABLE IF NOT EXISTS %s (" +
-                    "%s VARCHAR(255) NOT NULL" + 
-                    ");", FAILURE, URL); 
-                stmt.executeUpdate(sql);
-                stmt = c.createStatement();
                 for (String failure: fail) {
-                    sql = String.format("INSERT INTO %s (%s) VALUES ('%s');",
+                    String sql = String.format("INSERT INTO %s (%s) VALUES ('%s');",
                             FAILURE, URL, failure);
                     stmt.executeUpdate(sql);
                 }
@@ -140,7 +153,7 @@ public class SudokuPuzzler {
                         int id = Integer.parseInt(succes.substring(succes.indexOf("=") + 1));
                         String puzzle = sb.toString();
                         String difficulty = page.substring(index, page.indexOf("#", index)-1);
-                        sql = String.format("INSERT INTO %s (%s,%s,%s,%s) "
+                        String sql = String.format("INSERT INTO %s (%s,%s,%s,%s) "
                                 + "VALUES (%d,'%s','%s',%d);",
                                 SUDOKU, ID, PUZZLE, DIFFICULTY, GIVEN, 
                                 id, puzzle, difficulty, given);
@@ -148,6 +161,10 @@ public class SudokuPuzzler {
                     }
                 //useful query to update all givens: 
                 //UPDATE sudoku SET given = LENGTH(REPLACE(puzzle, '0', ''));
+                //show all difficulties and their counts:
+                //SELECT difficulty, COUNT(*) FROM sudoku GROUP BY difficulty;
+                //show all items with a difficulty that occours once
+                //SELECT * FROM sudoku WHERE id in (SELECT s.id FROM sudoku s GROUP BY s.difficulty HAVING COUNT(*) = 1 );
                 stmt.close();
                 c.commit();
                 c.close();
